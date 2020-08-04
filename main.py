@@ -9,14 +9,15 @@ raz4 = len(a)
 raz7 = len(b)
 
 # хранение данных пользователя и статистики его ответов по 4 задаиню
-d = {-1: [0, 0, 0, 0]}  # 0-выбор слова 1-предыдущее слово 2-флаг выбора задания 3-флаг удаления статистики
+d = {-1: [0, 0, 0, 0,
+          0]}  # 0-выбор слова 1-предыдущее слово 2-флаг выбора задания 3-флаг удаления статистики 4-флаг обработки даблклика
 
 # данные об ошибках в ударениях (4 номер)
 mis4 = {-1: [[], 0, 0]}  # 0-массив ошибок 1-число верных ответов 2-число всех ответов
 
 # данные об ошибках в лексических нормах (7 номер)
 mis7 = {-1: [[], 0, 0]}  # 0-массив ошибок 1-число верных ответов 2-число всех ответов
-
+z = 0
 bot = telebot.TeleBot("YOUR_TOKEN")  # сюда нужно вписать ваш токен
 
 
@@ -116,7 +117,7 @@ def deletestat_7(message):
 @bot.message_handler(commands=['start', 'старт'])
 def start(message):
     if (not message.chat.id in d):
-        d[message.chat.id] = [0, 0, 0, 0]
+        d[message.chat.id] = [0, 0, 0, 0, 0]
         mis4[message.chat.id] = [[], 0, 0]
         mis7[message.chat.id] = [[], 0, 0]
     bot.send_message(message.chat.id, "Для повторения 4 задания (ударения) нажмите /number4. \n" +
@@ -150,6 +151,9 @@ def number7(message):
 
 @bot.message_handler(content_types=['text'])
 def ask(message):
+    if (d[message.chat.id][4]):  # обработка даблклика
+        return
+    d[message.chat.id][4] = 1
     if (not message.chat.id in d):  # обработка текста перед нажатым /start
         bot.send_message(message.chat.id,
                          "Для начала работы напишите /start или /help, чтобы посмотреть на все команды бота")
@@ -172,28 +176,29 @@ def ask(message):
     s = message.text
     x = d[message.chat.id][0]
 
-    if (d[message.chat.id][2] == 4):
-        if (s == a[x][0]):
+    if (d[message.chat.id][2] == 4):  # если выбрано 4 задание
+        if (s == a[x][0]):  # если ответ верен
             keyboard = buttons_4(message.chat.id)
             bot.send_message(message.chat.id, a[x][0] + " -  ВЕРНО! ✅", reply_markup=keyboard)
             mis4[message.chat.id][1] += 1  # увеличываем число верных ответов
             mis4[message.chat.id][2] += 1  # увеличываем число всех ответов
-        elif (s == a[x][1]):
+        elif (s == a[x][1]):  # если ответ неверен
             mistakes_4(x, message.chat.id)
             keyboard = buttons_4(message.chat.id)
             bot.send_message(message.chat.id, a[x][1] + " - НЕВЕРНО! ❌", reply_markup=keyboard)
             mis4[message.chat.id][2] += 1  # увеличываем число всех ответов
-    else:
-        if (s == b[x][0]):
+    else:  # если выбрано 7 задание
+        if (s == b[x][0]):  # если ответ верен
             keyboard = buttons_7(message.chat.id)
             bot.send_message(message.chat.id, b[x][0] + " -  ВЕРНО! ✅", reply_markup=keyboard)
             mis7[message.chat.id][1] += 1  # увеличываем число верных ответов
             mis7[message.chat.id][2] += 1  # увеличываем число всех ответов
-        elif (s == b[x][1]):
+        elif (s == b[x][1]):  # если ответ неверен
             keyboard = buttons_7(message.chat.id)
             mistakes_7(x, message.chat.id)
             bot.send_message(message.chat.id, b[x][1] + " - НЕВЕРНО! ❌", reply_markup=keyboard)
             mis7[message.chat.id][2] += 1  # увеличываем число всех ответов
+    d[message.chat.id][4] = 0
 
 
 # добавление слова, в котором ошибся пользователь, в массив mis4
