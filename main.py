@@ -9,15 +9,14 @@ raz4 = len(a)
 raz7 = len(b)
 
 # хранение данных пользователя и статистики его ответов по 4 задаиню
-d = {-1: [0, 0, 0, 0,
-          0]}  # 0-выбор слова 1-предыдущее слово 2-флаг выбора задания 3-флаг удаления статистики 4-флаг обработки даблклика
+d = {-1: [0, 0, 0, 0]}  # 0-выбор слова 1-предыдущее слово 2-флаг выбора задания 3-флаг удаления статистики
 
 # данные об ошибках в ударениях (4 номер)
 mis4 = {-1: [[], 0, 0]}  # 0-массив ошибок 1-число верных ответов 2-число всех ответов
 
 # данные об ошибках в лексических нормах (7 номер)
 mis7 = {-1: [[], 0, 0]}  # 0-массив ошибок 1-число верных ответов 2-число всех ответов
-z = 0
+
 bot = telebot.TeleBot("YOUR_TOKEN")  # сюда нужно вписать ваш токен
 
 
@@ -117,7 +116,7 @@ def deletestat_7(message):
 @bot.message_handler(commands=['start', 'старт'])
 def start(message):
     if (not message.chat.id in d):
-        d[message.chat.id] = [0, 0, 0, 0, 0]
+        d[message.chat.id] = [0, 0, 0, 0]
         mis4[message.chat.id] = [[], 0, 0]
         mis7[message.chat.id] = [[], 0, 0]
     bot.send_message(message.chat.id, "Для повторения 4 задания (ударения) нажмите /number4. \n" +
@@ -151,9 +150,6 @@ def number7(message):
 
 @bot.message_handler(content_types=['text'])
 def ask(message):
-    if (d[message.chat.id][4]):  # обработка даблклика
-        return
-    d[message.chat.id][4] = 1
     if (not message.chat.id in d):  # обработка текста перед нажатым /start
         bot.send_message(message.chat.id,
                          "Для начала работы напишите /start или /help, чтобы посмотреть на все команды бота")
@@ -198,7 +194,6 @@ def ask(message):
             mistakes_7(x, message.chat.id)
             bot.send_message(message.chat.id, b[x][1] + " - НЕВЕРНО! ❌", reply_markup=keyboard)
             mis7[message.chat.id][2] += 1  # увеличываем число всех ответов
-    d[message.chat.id][4] = 0
 
 
 # добавление слова, в котором ошибся пользователь, в массив mis4
